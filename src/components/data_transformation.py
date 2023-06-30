@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler, MinMaxScaler, RobustScaler, LabelEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler,LabelEncoder
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from src.exception import CustomException
@@ -26,23 +26,20 @@ class DataTransformation:
         Function to perform Data Transformation
         '''
         try:
-            num_col = ['Date', 'PM2.5', 'PM10', 'NO', 'NO2', 'NOx', 'NH3', 'CO', 'SO2', 'O3', 'Benzene', 'Toluene', 'Xylene', 'AQI']
-            cat_col = ['City', 'AQI_Bucket']
+            num_col = ['pollutant_min','pollutant_max']
+            cat_col = ['country','state','city','station','pollutant_id']
 
             num_pipeline = Pipeline(
                 steps=[
                     ("imputer", SimpleImputer(strategy="median")),
                     ("scaler", StandardScaler(with_mean=False)),
-                    ("min_max_scaler", MinMaxScaler()),
-                    ("robust_scaler", RobustScaler())
                 ]
             )
 
             cat_pipeline = Pipeline(
                 steps=[
                     ("imputer", SimpleImputer(strategy="most_frequent")),
-                    ("label_encoder", LabelEncoder()),
-                    ("one_hot_encoder", OneHotEncoder(sparse=False, handle_unknown="ignore"))
+                    ("one_hot_encoder",OneHotEncoder())
                 ]
             )
 
@@ -65,8 +62,8 @@ class DataTransformation:
 
             logging.info("Obtaining processing object ")
             preprocessing_obj = self.get_data_transf_obj()
-            target_col = "AQI"
-            num_col = ['Date', 'PM2.5', 'PM10', 'NO', 'NO2', 'NOx', 'NH3', 'CO', 'SO2', 'O3', 'Benzene', 'Toluene', 'Xylene']
+            target_col = 'pollutant_avg'
+            num_col = ['pollutant_min','pollutant_max']
 
             input_feature_train_df = train_df.drop(columns=[target_col], axis=1)
             target_feature_train_df = train_df[target_col]
@@ -79,12 +76,34 @@ class DataTransformation:
             input_feature_train_arr = preprocessing_obj.fit_transform(input_feature_train_df)
             input_feature_test_arr = preprocessing_obj.transform(input_feature_test_df)
 
-            train_arr = np.c_[
-                input_feature_train_arr, np.array(target_feature_train_df)
-            ]
-            test_arr = np.c_[
-                input_feature_test_arr, np.array(target_feature_test_df)
-            ]
+            # Reshape target feature arrays to match the input feature arrays
+            target_feature_train_arr = np.array(target_feature_train_df).reshape(-1, 1)
+            target_feature_test_arr = np.array(target_feature_test_df).reshape(-1, 1)
+
+            # Convert the arrays to pandas DataFrame
+            input_feature_train_df = pd.DataFrame(input_feature_train_arr)
+            target_feature_train_df = pd.DataFrame(target_feature_train_arr)
+            input_feature_test_df = pd.DataFrame(input_feature_test_arr)
+            target_feature_test_df = pd.DataFrame(target_feature_test_arr)
+
+            # Perform the concatenation
+            train_df = pd.concat([input_feature_train_df, target_feature_train_df], axis=1)
+            test_df = pd.concat([input_feature_test_df, target_feature_test_df], axis=1)
+
+            # Convert the DataFrame back to numpy array, if needed
+            train_arr = train_df.values
+            test_arr = test_df.values
+
+            
+        
+
+            # train_arr = np.concatenate((input_feature_train_arr, target_feature_train_arr), axis=1)
+            # test_arr = np.concatenate((input_feature_test_arr, target_feature_test_arr), axis=1)
+
+
+            # train_arr = np.hstack((input_feature_train_arr, target_feature_train_arr))
+            # test_arr = np.hstack((input_feature_test_arr, target_feature_test_arr))
+
             logging.info("Saved preprocessing object ")
 
             save_object(
@@ -99,3 +118,14 @@ class DataTransformation:
             )
         except Exception as e:
             raise CustomException(e, sys)
+
+
+# print('input_feature_test_arr',input_feature_test_arr.shape)
+            # print('input_feature_train_arr',input_feature_train_arr.shape)
+            # print('target_feature_train_arr : ',target_feature_train_arr.shape)
+            # print('target_feature_test_arr : ',target_feature_test_arr.shape)
+            
+            # print(np.isnan(input_feature_train_arr).any())
+            # print(np.isnan(target_feature_train_arr).any())
+            # print(np.isnan(input_feature_test_arr).any())
+            # print(np.isnan(target_feature_test_arr).any())
