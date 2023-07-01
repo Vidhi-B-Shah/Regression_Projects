@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pollution Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-image: url('static/air.webp');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        h2 {
+            color: #333;
+        }
+        p {
+            color: #555;
+            font-size: 18px;
+        }
+
+        /* Center-align the prediction results */
+        .prediction-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .prediction-container p {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pollution Prediction</h1>
+    <form action="/predictdata" method="POST">
+        <label for="country">Country:</label>
+        <input type="text" id="country" name="country"><br><br>
+
+        <label for="state">State:</label>
+        <input type="text" id="state" name="state"><br><br>
+
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city"><br><br>
+
+        <label for="station">Station:</label>
+        <input type="text" id="station" name="station"><br><br>
+
+        <label for="pollutant_min">Pollutant Min:</label>
+        <input type="number" step="any" id="pollutant_min" name="pollutant_min"><br><br>
+
+        <label for="pollutant_max">Pollutant Max:</label>
+        <input type="number" step="any" id="pollutant_max" name="pollutant_max"><br><br>
+
+        <input type="submit" value="Predict">
+    </form>
+
+    {% if results %}
+    <div class="prediction-container">
+        <h2>Prediction Results:</h2>
+        
+        {% if results<50 %}
+        <p>Predicted Pollutant Average: {{ results }}</p>
+        <p>This range defines air quality as good as it shows minimal or no impact on health.</p>
+        {% endif %}
+
+        {% if 50<results<100 %}
+        <p>Predicted Pollutant Average: {{ results }}</p>
+        <p>This is a satisfactory air quality range and it can show effects such as breathing difficulty in sensitive groups.</p>
+        {% endif %}
+
+        {% if 100<results<200 %}
+        <p>Predicted Pollutant Average: {{ results }}</p>
+        <p>The range shows moderate air quality with impacts such as breathing discomfort for children and elderly people, and people already suffering from lung disorders and heart disease.</p>
+        {% endif %}
+
+        {% if 200<results<300 %}
+        <p>Predicted Pollutant Average: {{ results }}</p>
+        <p>This range communicates that the air quality is poor and shows health effects on people when exposed for the long term. People already suffering from heart diseases can experience discomfort from short exposure.</p>
+        {% endif %}
+
+        {% if 300<results<400 %}
+        <p>Predicted Pollutant Average: {{ results }}</p>
+        <p>This range shows very poor air quality and causes respiratory illness for a longer duration of exposure.</p>
+        {% endif %}
+
+        {% if 400<results<500 %}
+        <p>Predicted Pollutant Average: {{ results }}</p>
+        <p>This is the severe range causing health impacts to normal and diseased people. It also causes severe health impacts on sensitive groups.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</body>
+</html>

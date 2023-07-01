@@ -20,112 +20,77 @@ class DataTransformationConfig:
 class DataTransformation:
     def __init__(self):
         self.data_transformation_config = DataTransformationConfig()
-
-    def get_data_transf_obj(self):
-        '''
-        Function to perform Data Transformation
-        '''
-        try:
-            num_col = ['pollutant_min','pollutant_max']
-            cat_col = ['country','state','city','station','pollutant_id']
-
-            num_pipeline = Pipeline(
-                steps=[
-                    ("imputer", SimpleImputer(strategy="median")),
-                    ("scaler", StandardScaler(with_mean=False)),
-                ]
-            )
-
-            cat_pipeline = Pipeline(
-                steps=[
-                    ("imputer", SimpleImputer(strategy="most_frequent")),
-                    ("one_hot_encoder",OneHotEncoder())
-                ]
-            )
-
-            logging.info("Numerical columns scaling and categorical columns encoding done")
-
-            preprocessor = ColumnTransformer(
-                [
-                    ("num_pipeline", num_pipeline, num_col),
-                    ("cat_pipeline", cat_pipeline, cat_col)
-                ]
-            )
-            return preprocessor
-        except Exception as e:
-            raise CustomException(e, sys)
-
+        
+            
     def initiate_data_transform(self, train_path, test_path):
         try:
+            
+            numeric_features = ['pollutant_min', 'pollutant_max']
+            categorical_features = ['country', 'state', 'city', 'station']
+
+            numeric_transformer = Pipeline(steps=[
+                ('imputer', SimpleImputer(strategy='mean'))])
+
+            categorical_transformer = Pipeline(steps=[
+                ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
+                ('onehot', OneHotEncoder(handle_unknown='ignore'))])
+
+            preprocessor = ColumnTransformer(transformers=[
+                ('num', numeric_transformer, numeric_features),
+                ('cat', categorical_transformer, categorical_features)])
+            
+            data_pipeline = Pipeline(steps=[
+                ('preprocessor', preprocessor)])
+            
+            
+            
+            
+            
             train_df = pd.read_csv(train_path)
             test_df = pd.read_csv(test_path)
 
             logging.info("Obtaining processing object ")
-            preprocessing_obj = self.get_data_transf_obj()
-            target_col = 'pollutant_avg'
-            num_col = ['pollutant_min','pollutant_max']
+            
+            
+            
+            
 
-            input_feature_train_df = train_df.drop(columns=[target_col], axis=1)
-            target_feature_train_df = train_df[target_col]
+            # separate input features and target variable
+            
+            X_train = train_df.drop(columns=['pollutant_avg'])
+            y_train = train_df['pollutant_avg']
+            X_test = test_df.drop(columns=['pollutant_avg'])
+            y_test = test_df['pollutant_avg']
+            
+            y_test.fillna(y_test.mean(), inplace=True)
+            y_train.fillna(y_train.mean(), inplace=True)
 
-            input_feature_test_df = test_df.drop(columns=[target_col], axis=1)
-            target_feature_test_df = test_df[target_col]
+            # fit on training set and transform both training and test set
+            X_train_transformed = data_pipeline.fit_transform(X_train)
+            X_test_transformed = data_pipeline.transform(X_test)
+            
+            
 
             logging.info("Applying preprocessing on train and test dataframes ")
-
-            input_feature_train_arr = preprocessing_obj.fit_transform(input_feature_train_df)
-            input_feature_test_arr = preprocessing_obj.transform(input_feature_test_df)
-
-            # Reshape target feature arrays to match the input feature arrays
-            target_feature_train_arr = np.array(target_feature_train_df).reshape(-1, 1)
-            target_feature_test_arr = np.array(target_feature_test_df).reshape(-1, 1)
-
-            # Convert the arrays to pandas DataFrame
-            input_feature_train_df = pd.DataFrame(input_feature_train_arr)
-            target_feature_train_df = pd.DataFrame(target_feature_train_arr)
-            input_feature_test_df = pd.DataFrame(input_feature_test_arr)
-            target_feature_test_df = pd.DataFrame(target_feature_test_arr)
-
-            # Perform the concatenation
-            train_df = pd.concat([input_feature_train_df, target_feature_train_df], axis=1)
-            test_df = pd.concat([input_feature_test_df, target_feature_test_df], axis=1)
-
-            # Convert the DataFrame back to numpy array, if needed
-            train_arr = train_df.values
-            test_arr = test_df.values
-
             
-        
-
-            # train_arr = np.concatenate((input_feature_train_arr, target_feature_train_arr), axis=1)
-            # test_arr = np.concatenate((input_feature_test_arr, target_feature_test_arr), axis=1)
-
-
-            # train_arr = np.hstack((input_feature_train_arr, target_feature_train_arr))
-            # test_arr = np.hstack((input_feature_test_arr, target_feature_test_arr))
-
+            # if y_test.isnull().any():
+            #     raise CustomException("target var contains missing values", sys)
+            
             logging.info("Saved preprocessing object ")
-
             save_object(
                 file_path=self.data_transformation_config.preprocessor_obj_file,
-                obj=preprocessing_obj
+                obj=preprocessor
             )
 
             return (
-                train_arr,
-                test_arr,
+                X_train_transformed,
+                y_train,
+                X_test_transformed,
+                y_test,
                 self.data_transformation_config.preprocessor_obj_file
             )
         except Exception as e:
             raise CustomException(e, sys)
 
 
-# print('input_feature_test_arr',input_feature_test_arr.shape)
-            # print('input_feature_train_arr',input_feature_train_arr.shape)
-            # print('target_feature_train_arr : ',target_feature_train_arr.shape)
-            # print('target_feature_test_arr : ',target_feature_test_arr.shape)
-            
-            # print(np.isnan(input_feature_train_arr).any())
-            # print(np.isnan(target_feature_train_arr).any())
-            # print(np.isnan(input_feature_test_arr).any())
-            # print(np.isnan(target_feature_test_arr).any())
+
