@@ -74,16 +74,29 @@
     <h1>Pollution Prediction</h1>
     <form action="/predictdata" method="POST">
         <label for="country">Country:</label>
-        <input type="text" id="country" name="country"><br><br>
+        <select id="country" name="country" class="dynamic-dropdown">
+            <option value="">Select Country</option>
+            <option value="India">India</option>
+            
+        </select><br><br>
 
         <label for="state">State:</label>
-        <input type="text" id="state" name="state"><br><br>
+        <select id="state" name="state" class="dynamic-dropdown">
+            <option value="">Select State</option>
+            
+        </select><br><br>
 
         <label for="city">City:</label>
-        <input type="text" id="city" name="city"><br><br>
+        <select id="city" name="city" class="dynamic-dropdown">
+            <option value="">Select City</option>
+           
+        </select><br><br>
 
         <label for="station">Station:</label>
-        <input type="text" id="station" name="station"><br><br>
+        <select id="station" name="station" class="dynamic-dropdown">
+            <option value="">Select Station</option>
+         
+        </select><br><br>
 
         <label for="pollutant_min">Pollutant Min:</label>
         <input type="number" step="any" id="pollutant_min" name="pollutant_min"><br><br>
@@ -132,3 +145,314 @@
 
 </body>
 </html>
+
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Function to populate the dropdown with options
+    function populateDropdown(dropdownId, options) {
+        var dropdown = $("#" + dropdownId);
+        dropdown.empty();
+        dropdown.append('<option value="">Select ' + dropdownId + '</option>');
+        $.each(options, function(index, value) {
+            dropdown.append('<option value="' + value + '">' + value + '</option>');
+        });
+    }
+
+    // Event listener for country dropdown
+    $("#country").on("change", function() {
+        var selectedCountry = $(this).val();
+        var selectedStates = [];
+        
+        // Filter unique states based on the selected country
+        selectedStates = data
+            .filter(function(row) {
+                return row.country === selectedCountry;
+            })
+            .map(function(row) {
+                return row.state;
+            })
+            .filter(function(value, index, self) {
+                return self.indexOf(value) === index;
+            });
+
+        populateDropdown("state", selectedStates);
+        populateDropdown("city", []);
+        populateDropdown("station", []);
+    });
+
+    // Event listener for state dropdown
+    $("#state").on("change", function() {
+        var selectedState = $(this).val();
+        var selectedCities = [];
+        
+        // Filter unique cities based on the selected state
+        selectedCities = data
+            .filter(function(row) {
+                return row.state === selectedState;
+            })
+            .map(function(row) {
+                return row.city;
+            })
+            .filter(function(value, index, self) {
+                return self.indexOf(value) === index;
+            });
+
+        populateDropdown("city", selectedCities);
+        populateDropdown("station", []);
+    });
+
+    // Event listener for city dropdown
+    $("#city").on("change", function() {
+        var selectedCity = $(this).val();
+        var selectedStations = [];
+        
+        // Filter unique stations based on the selected city
+        selectedStations = data
+            .filter(function(row) {
+                return row.city === selectedCity;
+            })
+            .map(function(row) {
+                return row.station;
+            })
+            .filter(function(value, index, self) {
+                return self.indexOf(value) === index;
+            });
+
+        populateDropdown("station", selectedStations);
+    });
+
+    // Placeholder data (replace with your actual data)
+    var data = [
+        {country: "India", state: "Andhra_Pradesh", city: "Amaravati", station: "Secretariat, Amaravati - APPCB" },
+        {country: "India", state: "Andhra_Pradesh", city: "Rajamahendravaram", station: "Anand Kala Kshetram, Rajamahendravaram - APPCB" },
+        {country: "India", state: "Andhra_Pradesh", city: "Tirupati", station: "Tirumala, Tirupati - APPCB" },
+        {country: "India", state: "Andhra_Pradesh", city: "Visakhapatnam", station: "GVM Corporation, Visakhapatnam - APPCB" },
+        {country: "India", state: "Assam", city: "Guwahati", station: "Railway Colony, Guwahati - APCB"},
+        {country: "India", state: "Assam", city: "Guwahati", station: "Pan Bazaar, Guwahati - APCB"},
+        {country: "India", state: "Bihar", city: "Gaya", station: "Collectorate, Gaya - BSPCB" },
+        {country: "India", state: "Bihar", city: "Gaya", station: "SFTI Kusdihra, Gaya - BSPCB"  },
+        {country: "India", state: "Bihar", city: "Hajipur", station: "Industrial Area, Hajipur - BSPCB" },
+        {country: "India", state: "Bihar", city: "Muzaffarpur", station: "Buddha Colony, Muzaffarpur - BSPCB" },
+        {country: "India", state: "Bihar", city: "Muzaffarpur", station: "Muzaffarpur Collectorate, Muzaffarpur - BSPCB" },
+        {country: "India", state: "Bihar", city: "Patna", station: "DRM Office Danapur, Patna - BSPCB" },
+        {country: "India", state: "Bihar", city: "Patna", station: "Govt. High School Shikarpur, Patna - BSPCB" },
+        {country: "India", state: "Bihar", city: "Patna", station: "Muradpur, Patna - BSPCB" },
+        {country: "India", state: "Bihar", city: "Patna", station: "Rajbansi Nagar, Patna - BSPCB" },
+        {country: "India", state: "Bihar", city: "Patna", station: "Samanpura, Patna - BSPCB" },
+        {country: "India", state: "Chandigarh", city: "Chandigarh", station: "Sector 22, Chandigarh - CPCC" },
+        {country: "India", state: "Chhattisgarh", city: "Chhattisgarh", station: "Mangala, Bilaspur - NTPC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Alipur, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Anand Vihar, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Ashok Vihar, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Aya Nagar, Delhi - IMD" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Bawana, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "CRRI Mathura Road, Delhi - IMD" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Chandni Chowk, Delhi - IITM" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "DTU, Delhi - CPCB" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Dr. Karni Singh Shooting Range, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Dwarka-Sector 8, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "IHBAS, Dilshad Garden, Delhi - CPCBC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "ITO, Delhi - CPCB" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Jahangirpuri, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Jawaharlal Nehru Stadium, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Lodhi Road, Delhi - IITM" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Major Dhyan Chand National Stadium, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Mandir Marg, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Mundka, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "NSIT Dwarka, Delhi - CPCB" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Najafgarh, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Narela, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Nehru Nagar, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "North Campus, DU, Delhi - IMD" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Patparganj, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Punjabi Bagh, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Pusa, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "R K Puram, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Rohini, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Shadipur, Delhi - CPCB" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Sirifort, Delhi - CPCB" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Sonia Vihar, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Sri Aurobindo Marg, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Vivek Vihar, Delhi - DPCC" },
+        {country: "India", state: "Delhi", city: "Delhi", station: "Wazirpur, Delhi - DPCC" },
+        {country: "India", state: "Gujarat", city: "Ahmedabad", station: "Gyaspur, Ahmedabad - IITM" },
+        {country: "India", state: "Gujarat", city: "Ahmedabad", station: "Maninagar, Ahmedabad - GPCB" },
+        {country: "India", state: "Gujarat", city: "Ahmedabad", station: "SAC ISRO Bopal, Ahmedabad - IITM" },
+        {country: "India", state: "Gujarat", city: "Ahmedabad", station: "SAC ISRO Satellite, Ahmedabad - IITM" },
+        {country: "India", state: "Gujarat", city: "Ahmedabad", station: "SVPI Airport Hansol, Ahmedabad - IITM" },
+        {country: "India", state: "Gujarat", city: "Nandesari", station: "GIDC, Nandesari - Nandesari Ind. Association" },
+        {country: "India", state: "Gujarat", city: "Vapi", station: "Phase-1 GIDC, Vapi - GPCB" },
+        {country: "India", state: "Gujarat", city: "Vatva", station: "Phase-4 GIDC, Vatva - GPCB" },
+        {country: "India", state: "Haryana", city: "Ambala", station: "Patti Mehar, Ambala - HSPCB" },
+        {country: "India", state: "Haryana", city: "Bahadurgarh", station: "Arya Nagar, Bahadurgarh - HSPCB" },
+        {country: "India", state: "Haryana", city: "Bhiwani", station: "H.B. Colony, Bhiwani - HSPCB" },
+        {country: "India", state: "Haryana", city: "Ballabgarh", station: "Nathu Colony, Ballabgarh - HSPCB" },
+        {country: "India", state: "Haryana", city: "Dharuhera", station: "Municipal Corporation Office, Dharuhera -  HSPCB" },
+        {country: "India", state: "Haryana", city: "Faridabad", station: "New Industrial Town, Faridabad - HSPCB" },
+        {country: "India", state: "Haryana", city: "Faridabad", station: "Sector 11, Faridabad - HSPCB" },
+        {country: "India", state: "Haryana", city: "Faridabad", station: "Sector 30, Faridabad - HSPCB" },
+        {country: "India", state: "Haryana", city: "Faridabad", station: "Sector- 16A, Faridabad - HSPCB" },
+        {country: "India", state: "Haryana", city: "Fatehabad", station: "Huda Sector, Fatehabad - HSPCB" },
+        {country: "India", state: "Haryana", city: "Gurugram", station: "NISE Gwal Pahari, Gurugram - IMD" },
+        {country: "India", state: "Haryana", city: "Gurugram", station: "Sector-51, Gurugram - HSPCB" },
+        {country: "India", state: "Haryana", city: "Gurugram", station: "Teri Gram, Gurugram - HSPCB" },
+        {country: "India", state: "Haryana", city: "Gurugram", station: "Vikas Sadan, Gurugram - HSPCB" },
+        {country: "India", state: "Haryana", city: "Hisar", station: "Urban Estate-II, Hisar - HSPCB" },
+        {country: "India", state: "Haryana", city: "Jind", station: "Police Lines, Jind - HSPCB" },
+        {country: "India", state: "Haryana", city: "Kaithal", station: "Rishi Nagar, Kaithal - HSPCB" },
+        {country: "India", state: "Haryana", city: "Karnal", station: "Sector-12, Karnal - HSPCB" },
+        {country: "India", state: "Haryana", city: "Kurukshetra", station: "Sector-7, Kurukshetra - HSPCB" },
+        {country: "India", state: "Haryana", city: "Mandikhera", station: "General Hospital, Mandikhera - HSPCB" },
+        {country: "India", state: "Haryana", city: "Manesar", station: "Sector-2 IMT, Manesar - HSPCB" },
+        {country: "India", state: "Haryana", city: "Narnaul", station: "Shastri Nagar, Narnaul - HSPCB" },
+        {country: "India", state: "Haryana", city: "Palwal", station: "Shyam Nagar, Palwal - HSPCB" },
+        {country: "India", state: "Haryana", city: "Panchkula", station: "Sector-6, Panchkula - HSPCB" },
+        {country: "India", state: "Haryana", city: "Panipat", station: "Sector-18, Panipat - HSPCB" },
+        {country: "India", state: "Haryana", city: "Rohtak", station: "MD University, Rohtak - HSPCB" },
+        {country: "India", state: "Haryana", city: "Sirsa", station: "F-Block, Sirsa - HSPCB" },
+        {country: "India", state: "Haryana", city: "Sonipat", station: "Murthal, Sonipat - HSPCB" },
+        {country: "India", state: "Haryana", city: "Yamunanagar", station: "Gobind Pura, Yamuna Nagar - HSPCB" },
+        {country: "India", state: "Jammu_&_Kashmir", city: "Srinagar", station: "Rajbagh, Srinagar - JKSPCB" },
+        {country: "India", state: "Jharkhand", city: "Bagalkot", station: "Vidayagiri, Bagalkot - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Bengaluru", station: "BWSSB Kadabesanahalli, Bengaluru - CPCB" },
+        {country: "India", state: "Karnataka", city: "Bengaluru", station: "Bapuji Nagar, Bengaluru - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Bengaluru", station: "City Railway Station, Bengaluru - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Bengaluru", station: "Hebbal, Bengaluru - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Bengaluru", station: "Hombegowda Nagar, Bengaluru - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Bengaluru", station: "Jayanagar 5th Block, Bengaluru - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Bengaluru", station: "Peenya, Bengaluru - CPCB" },
+        {country: "India", state: "Karnataka", city: "Bengaluru", station: "Sanegurava Halli, Bengaluru - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Bengaluru", station: "Silk Board, Bengaluru - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Chamarajanagar", station: "Urban, Chamarajanagar - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Chikkaballapur", station: "Chikkaballapur Rural, Chikkaballapur - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Chikkamagaluru", station: "Kalyana Nagara, Chikkamagaluru - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Davanagere", station: "Devaraj Urs Badavane, Davanagere - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Hassan", station: "B.Katihalli, Hassan - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Hubballi", station: "Deshpande Nagar, Hubballi - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Kalaburgi", station: "Lal Bahadur Shastri Nagar, Kalaburagi - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Manglore", station: "Kadri, Mangalore - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Mysuru", station: "Hebbal 1st Stage, Mysuru - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Raichur", station: "Haji Colony, Raichur - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Shivamogga", station: "Vinoba Nagara, Shivamogga - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Udupi", station: "Brahmagiri, Udupi - KSPCB" },
+        {country: "India", state: "Karnataka", city: "Vijayapura", station: "Ibrahimpur, Vijayapura - KSPCB" },
+        {country: "India", state: "Kerala", city: "Kannur", station: "Thavakkara, Kannur - Kerala PCB" },
+        {country: "India", state: "Kerala", city: "Kochi", station: "Vyttila, Kochi - Kerala PCB" },
+        {country: "India", state: "Kerala", city: "Kollam", station: "Polayathode, Kollam - Kerala PCB" },
+        {country: "India", state: "Kerala", city: "Kozhikode", station: "Palayam, Kozhikode - Kerala PCB" },
+        {country: "India", state: "Madhya Pradesh", city: "Bhopal", station: "T T Nagar, Bhopal - MPPCB" },
+        {country: "India", state: "Madhya Pradesh", city: "Damoh", station: "Shrivastav Colony, Damoh - MPPCB" },
+        {country: "India", state: "Madhya Pradesh", city: "Gwalior", station: "City Center, Gwalior - MPPCB" },
+        {country: "India", state: "Madhya Pradesh", city: "Indore", station: "Chhoti Gwaltoli, Indore - MPPCB" },
+        {country: "India", state: "Madhya Pradesh", city: "Jabalpur", station: "Marhatal, Jabalpur - MPPCB" },
+        {country: "India", state: "Madhya Pradesh", city: "Pithampur", station: "Sector-2 Industrial Area, Pithampur - MPPCB" },
+        {country: "India", state: "Madhya Pradesh", city: "Ratlam", station: "Shasthri Nagar, Ratlam - IPCA LabB" },
+        {country: "India", state: "Madhya Pradesh", city: "Sagar", station: "Deen Dayal Nagar, Sagar - MPPCB" },
+        {country: "India", state: "Madhya Pradesh", city: "Singrauli", station: "Suryakiran Bhawan NCL, Singrauli - MPPCB" },
+        {country: "India", state: "Madhya Pradesh", city: "Ujjain", station: "Mahakaleshwar Temple, Ujjain - MPPCB" },
+        {country: "India", state: "Maharashtra", city: "Aurangabad", station: "More Chowk Waluj, Aurangabad - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Chandrapur", station: "Chandrapur, Chandrapur - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Chandrapur", station: "MIDC Khutala, Chandrapur - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Bandra Kurla Complex, Mumbai - IITM" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Bandra, Mumbai - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Borivali East, Mumbai - IITM" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Chakala-Andheri East, Mumbai - IITM" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Colaba, Mumbai - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Deonar, Mumbai - IITM" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Kandivali East, Mumbai - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Khindipada-Bhandup West, Mumbai - IITM" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Mazgaon, Mumbai - IITM" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Mulund West, Mumbai - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Powai, Mumbai - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Siddharth Nagar-Worli, Mumbai - IITM" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Sion, Mumbai - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Vasai West, Mumbai - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Mumbai", station: "Vile Parle West, Mumbai - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Nashik", station: "Gangapur Road, Nashik - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Navi Mumbai", station: "Mahape, Navi Mumbai - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Navi Mumbai", station: "Nerul, Navi Mumbai - MPCB" },
+        {country: "India", state: "Maharashtra", city: "Navi Mumbai", station: "Sector-19A Nerul, Navi Mumbai - IITM" },
+        {country: "India", state: "Maharashtra", city: "Thane", station: "Pimpleshwar Mandir, Thane - MPCB" },
+        {country: "India", state: "Meghalaya", city: "Shillong", station: "Lumpyngngad, Shillong - Meghalaya PCB" },
+        {country: "India", state: "Mizoram", city: "Aizawl", station: "Sikulpuikawn, Aizawl - Mizoram PCB" },
+        {country: "India", state: "Nagaland", city: "Kohima", station: "PWD Juction, Kohima - NPCB" },
+        {country: "India", state: "Odisha", city: "Brajrajnagar", station: "GM Office, Brajrajnagar - OSPCB" },
+        {country: "India", state: "Odisha", city: "Talcher", station: "Talcher Coalfields,Talcher - OSPCB" },
+        {country: "India", state: "Puducherry", city: "Puducherry", station: "Jawahar Nagar, Puducherry - PPCC" },
+        {country: "India", state: "Punjab", city: "Amritsar", station: "Golden Temple, Amritsar - PPCB" },
+        {country: "India", state: "Punjab", city: "Bathinda", station: "Hardev Nagar, Bathinda - PPCB" },
+        {country: "India", state: "Punjab", city: "Jalandhar", station: "Civil Line, Jalandhar - PPCB" },
+        {country: "India", state: "Punjab", city: "Khanna", station: "Kalal Majra, Khanna - PPCB" },
+        {country: "India", state: "Punjab", city: "Ludhiana", station: "Punjab Agricultural University, Ludhiana - PPCB" },
+        {country: "India", state: "Punjab", city: "Patiala", station: "Model Town, Patiala - PPCB" },
+        {country: "India", state: "Rajasthan", city: "Ajmer", station: "Civil Lines,  Ajmer - RSPCB" },
+        {country: "India", state: "Rajasthan", city: "Alwar", station: "Moti Doongri, Alwar - RSPCB" },
+        {country: "India", state: "Rajasthan", city: "Bhiwadi", station: "RIICO Ind. Area III, Bhiwadi - RSPCB" },
+        {country: "India", state: "Rajasthan", city: "Jaipur", station: "Adarsh Nagar, Jaipur - RSPCB" },
+        {country: "India", state: "Rajasthan", city: "Jaipur", station: "Police Commissionerate, Jaipur - RSPCB" },
+        {country: "India", state: "Rajasthan", city: "Jaipur", station: "Shastri Nagar, Jaipur - RSPCB" },
+        {country: "India", state: "Rajasthan", city: "Jodhpur", station: "Collectorate, Jodhpur - RSPCB" },
+        {country: "India", state: "Rajasthan", city: "Kota", station: "Shrinath Puram, Kota - RSPCB" },
+        {country: "India", state: "Rajasthan", city: "Chennai", station: "Alandur Bus Depot, Chennai - CPCB" },
+        {country: "India", state: "TamilNadu", city: "Chennai", station: "Arumbakkam, Chennai - TNPCB" },
+        {country: "India", state: "TamilNadu", city: "Chennai", station: "Kodungaiyur, Chennai - TNPCB" },
+        {country: "India", state: "TamilNadu", city: "Chennai", station: "Manali, Chennai - CPCB" },
+        {country: "India", state: "TamilNadu", city: "Chennai", station: "Perungudi, Chennai - TNPCB" },
+        {country: "India", state: "TamilNadu", city: "Chennai", station: "Royapuram, Chennai - TNPCB" },
+        {country: "India", state: "TamilNadu", city: "Chennai", station: "Velachery Res. Area, Chennai - CPCB" },
+        {country: "India", state: "TamilNadu", city: "Hyderabad", station: "Bollaram Industrial Area, Hyderabad - TSPCB" },
+        {country: "India", state: "Telangana", city: "Hyderabad", station: "Central University, Hyderabad - TSPCB" },
+        {country: "India", state: "Telangana", city: "Hyderabad", station: "ICRISAT Patancheru, Hyderabad - TSPCB" },
+        {country: "India", state: "Telangana", city: "Hyderabad", station: "IDA Pashamylaram, Hyderabad - TSPCB" },
+        {country: "India", state: "Telangana", city: "Hyderabad", station: "Sanathnagar, Hyderabad - TSPCB" },
+        {country: "India", state: "Telangana", city: "Hyderabad", station: "Zoo Park, Hyderabad - TSPCB" },
+        {country: "India", state: "Tripura", city: "Agartala", station: "Kunjaban, Agartala - Tripura SPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Agra", station: "Manoharpur, Agra - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Agra", station: "Sanjay Palace, Agra - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Agra", station: "Sector-3B Avas Vikas Colony, Agra - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Agra", station: "Shahjahan Garden, Agra - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Baghpat", station: "New Collectorate, Baghpat - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Bulandshahr", station: "Yamunapuram, Bulandshahr - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Firozabad", station: "Nagla Bhau, Firozabad - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Ghaziabad", station: "Indirapuram, Ghaziabad - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Ghaziabad", station: "Loni, Ghaziabad - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Ghaziabad", station: "Vasundhara, Ghaziabad - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Ghaziabad", station: "Sanjay Nagar, Ghaziabad - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Gorakhpur", station: "Madan Mohan Malaviya University of Technology, Gorakhpur - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Greater Noida", station: "Knowledge Park - III, Greater Noida - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Kanpur", station: "FTI Kidwai Nagar, Kanpur - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Kanpur", station: "IITK, Kanpur - IITK" },
+        {country: "India", state: "Uttar_Pradesh", city: "Kanpur", station: "Nehru Nagar, Kanpur - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Lucknow", station: "B R Ambedkar University, Lucknow - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Lucknow", station: "Central School, Lucknow - CPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Lucknow", station: "Gomti Nagar, Lucknow - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Meerut", station: "Ganga Nagar, Meerut - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Meerut", station: "Jai Bhim Nagar, Meerut - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Meerut", station: "Pallavpuram Phase 2, Meerut - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Moradabad", station: "Lajpat Nagar, Moradabad - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Muzaffarnagar", station: "New Mandi, Muzaffarnagar - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Noida", station: "Sector - 125, Noida - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Noida", station: "Sector-1, Noida - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Noida", station: "Sector-116, Noida - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Prayagraj", station: "Jhunsi, Prayagraj - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Prayagraj", station: "Motilal Nehru NIT, Prayagraj - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Prayagraj", station: "Nagar Nigam, Prayagraj - UPPC" },
+        {country: "India", state: "Uttar_Pradesh", city: "Varanasi", station: "Ardhali Bazar, Varanasi - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Varanasi", station: "Bhelupur, Varanasi - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Varanasi", station: "Maldahiya, Varanasi - UPPCB" },
+        {country: "India", state: "Uttar_Pradesh", city: "Varanasi", station: "IESD Banaras Hindu University, Varanasi - UPPCB" },
+        {country: "India", state: "West_Bengal", city: "Asansol", station: "Asansol Court Area, Asansol - WBPCB" },
+        {country: "India", state: "West_Bengal", city: "Durgapur", station: "Sidhu Kanhu Indoor Stadium, Durgapur - WBPCB" },
+        {country: "India", state: "West_Bengal", city: "Haldia", station: "Haldia, Haldia - WBPCB" },
+        {country: "India", state: "West_Bengal", city: "Howrah", station: "Belur Math, Howrah - WBPCB" },
+        {country: "India", state: "West_Bengal", city: "Howrah", station: "Padmapukur, Howrah - WBPCB" },
+        {country: "India", state: "West_Bengal", city: "Kolkata", station: "Ballygunge, Kolkata - WBPCB" },
+        {country: "India", state: "West_Bengal", city: "Kolkata", station: "Fort William, Kolkata - WBPCB" },
+        {country: "India", state: "West_Bengal", city: "Kolkata", station: "Rabindra Sarobar, Kolkata - WBPCB" },
+        {country: "India", state: "West_Bengal", city: "Kolkata", station: "Victoria, Kolkata - WBPCB" }
+    ];
+});
+</script>
